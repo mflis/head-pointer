@@ -12,7 +12,7 @@ from imutils import face_utils
 from imutils.video import VideoStream
 # import the necessary packages
 from scipy.spatial import distance as dist
-
+import numpy as np 
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -68,6 +68,7 @@ vs = VideoStream(src=0).start()
 fileStream = False
 time.sleep(1.0)
 
+
 # loop over frames from the video stream
 while True:
     # if this is a file video stream, then we need to check if
@@ -79,8 +80,12 @@ while True:
     # it, and convert it to grayscale
     # channels)
     frame = vs.read()
-    frame = imutils.resize(frame, width=450)
+    #frame = imutils.resize(frame, width=450)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    mask = np.zeros(frame.shape, dtype=np.uint8)
+    channel_count = frame.shape[2]  # i.e. 3 or 4 depending on your image
+    ignore_mask_color = (255,)*channel_count
 
     # detect faces in the grayscale frame
     rects = detector(gray, 0)
@@ -110,6 +115,9 @@ while True:
         cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
         cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
 
+        cv2.fillConvexPoly(mask, leftEyeHull, ignore_mask_color)
+        #cv2.fillPoly(mask, rightEyeHull, ignore_mask_color)
+
         # check to see if the eye aspect ratio is below the blink
         # threshold, and if so, increment the blink frame counter
         if ear < EYE_AR_THRESH:
@@ -133,8 +141,9 @@ while True:
         cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
+    masked_image = cv2.bitwise_and(frame, mask)
     # show the frame
-    cv2.imshow("Frame", frame)
+    cv2.imshow("Frame", masked_image)
     key = cv2.waitKey(1) & 0xFF
 
     # if the `q` key was pressed, break from the loop
