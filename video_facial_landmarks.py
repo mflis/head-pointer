@@ -1,13 +1,12 @@
 # USAGE
 # python video_facial_landmarks.py --shape-predictor shape_predictor_68_face_landmarks.dat
-# python video_facial_landmarks.py --shape-predictor shape_predictor_68_face_landmarks.dat --picamera 1
 
 import argparse
 import time
 
 import cv2
 import dlib
-import imutils
+import pyautogui
 from imutils import face_utils
 # import the necessary packages
 from imutils.video import VideoStream
@@ -16,8 +15,6 @@ from imutils.video import VideoStream
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--shape-predictor", required=True,
                 help="path to facial landmark predictor")
-ap.add_argument("-r", "--picamera", type=int, default=-1,
-                help="whether or not the Raspberry Pi camera should be used")
 args = vars(ap.parse_args())
 
 # initialize dlib's face detector (HOG-based) and then create
@@ -28,7 +25,7 @@ predictor = dlib.shape_predictor(args["shape_predictor"])
 
 # initialize the video stream and allow the cammera sensor to warmup
 print("[INFO] camera sensor warming up...")
-vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
+vs = VideoStream().start()
 time.sleep(2.0)
 
 frame_count = 0
@@ -64,15 +61,16 @@ while True:
 
         vertical_diff = leftEyeCorner[1] - leftEyebrowCorner[1]
         horizontal_diff = noseTop[0] - leftEyeCorner[0]
-        v_diff = vertical_diff - vert_zero
-        h_diff = horizontal_diff - horiz_zero
+        v_diff = vert_zero - vertical_diff
+        h_diff = horiz_zero - horizontal_diff
 
         if frame_count < 10:
             vert_acc += vertical_diff
             horiz_acc += horizontal_diff
         else:
-            horiz_zero =  int(horiz_acc / 25)
-            vert_zero = int(vert_acc / 25)
+            horiz_zero = int(horiz_acc / 10)
+            vert_zero = int(vert_acc / 10)
+            pyautogui.moveRel(h_diff, v_diff)
 
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
