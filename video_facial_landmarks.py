@@ -11,6 +11,8 @@ from imutils import face_utils
 # import the necessary packages
 from imutils.video import VideoStream
 
+pyautogui.FAILSAFE = False
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-p", "--shape-predictor", required=True,
