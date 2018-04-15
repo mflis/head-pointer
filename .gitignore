@@ -2,3 +2,5 @@
 *.swp
 *.mp4
 *.dat
+**/.idea
+__pycache__
