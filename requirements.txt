@@ -1,2 +1,4 @@
 imutils
 opencv-python
+scipy
+pyautogui

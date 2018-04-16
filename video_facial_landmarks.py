@@ -10,8 +10,25 @@ import pyautogui
 from imutils import face_utils
 # import the necessary packages
 from imutils.video import VideoStream
+from scipy.spatial import distance as dist
+
+
+def eye_aspect_ratio(eye):
+    # compute the euclidean distances between the two sets of
+    # vertical eye landmarks (x, y)-coordinates
+    A = dist.euclidean(eye[1], eye[5])
+    B = dist.euclidean(eye[2], eye[4])
+
+    # compute the euclidean distance between the horizontal
+    # eye landmark (x, y)-coordinates
+    C = dist.euclidean(eye[0], eye[3])
+
+    return (A + B) / (2.0 * C)
+
 
 pyautogui.FAILSAFE = False
+EYE_AR_THRESH = 0.25
+EYE_AR_CONSEC_FRAMES = 3
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -25,6 +42,11 @@ print("[INFO] loading facial landmark predictor...")
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(args["shape_predictor"])
 
+# grab the indexes of the facial landmarks for the left and
+# right eye, respectively
+(left_eye_start, left_eye_end) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
+(right_eye_start, right_eye_end) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
+
 # initialize the video stream and allow the cammera sensor to warmup
 print("[INFO] camera sensor warming up...")
 vs = VideoStream().start()
@@ -35,6 +57,9 @@ vert_zero = 0
 horiz_zero = 0
 vert_acc = 0
 horiz_acc = 0
+
+blink_frame_counter = 0
+total_blinks = 0
 
 # loop over the frames from the video stream
 while True:
@@ -74,6 +99,19 @@ while True:
             vert_zero = int(vert_acc / 10)
             pyautogui.moveRel(h_diff, v_diff)
 
+        left_eye = shape[left_eye_start:left_eye_end]
+        right_eye = shape[right_eye_start:right_eye_end]
+
+        ear = (eye_aspect_ratio(left_eye) + eye_aspect_ratio(right_eye)) / 2.0
+        if ear < EYE_AR_THRESH:
+            blink_frame_counter += 1
+        else:
+            if blink_frame_counter > EYE_AR_CONSEC_FRAMES:
+                # blink is detected
+                total_blinks += 1
+                pyautogui.click()
+            blink_frame_counter = 0
+
         # loop over the (x, y)-coordinates for the facial landmarks
         # and draw them on the image
         for (x, y) in shape:
@@ -92,6 +130,11 @@ while True:
         cv2.putText(frame, "v_diff: {}".format(v_diff), (10, 90),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         cv2.putText(frame, "h_diff {}".format(h_diff), (300, 90),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+        cv2.putText(frame, "Blinks: {}".format(total_blinks), (10, 120),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 120),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
     # show the frame
     cv2.imshow("Frame", frame)
