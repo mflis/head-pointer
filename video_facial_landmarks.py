@@ -27,7 +27,7 @@ def eye_aspect_ratio(eye):
 
 
 pyautogui.FAILSAFE = False
-EYE_AR_THRESH = 0.25
+BLINK_AR_THRESH = 0.25
 EYE_AR_CONSEC_FRAMES = 3
 
 # construct the argument parse and parse the arguments
@@ -61,6 +61,7 @@ horiz_acc = 0
 blink_frame_counter = 0
 total_blinks = 0
 
+
 # loop over the frames from the video stream
 while True:
     # grab the frame from the threaded video stream, resize it to
@@ -90,20 +91,20 @@ while True:
         horizontal_diff = noseTop[0] - leftEyeCorner[0]
         v_diff = vert_zero - vertical_diff
         h_diff = horiz_zero - horizontal_diff
-
-        if frame_count < 10:
+        if frame_count < 100:
             vert_acc += vertical_diff
             horiz_acc += horizontal_diff
         else:
-            horiz_zero = int(horiz_acc / 10)
-            vert_zero = int(vert_acc / 10)
-            pyautogui.moveRel(h_diff, v_diff)
+            horiz_zero = int(horiz_acc / 100)
+            vert_zero = int(vert_acc / 100)
+            h_movement = 0 if abs(h_diff) < 7 else h_diff
+            v_movement = 0 if abs(v_diff) < 3 else v_diff
+            pyautogui.moveRel(h_movement, v_movement)
 
         left_eye = shape[left_eye_start:left_eye_end]
         right_eye = shape[right_eye_start:right_eye_end]
-
         ear = (eye_aspect_ratio(left_eye) + eye_aspect_ratio(right_eye)) / 2.0
-        if ear < EYE_AR_THRESH:
+        if ear < BLINK_AR_THRESH:
             blink_frame_counter += 1
         else:
             if blink_frame_counter > EYE_AR_CONSEC_FRAMES:
@@ -136,6 +137,12 @@ while True:
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 120),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
+        cv2.putText(frame, "left eye: {:.2f}".format(eye_aspect_ratio(left_eye)), (10, 150),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.putText(frame, "right eye: {:.2f}".format(eye_aspect_ratio(right_eye)), (300, 150),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+
     # show the frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
