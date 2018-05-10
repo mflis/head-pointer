@@ -10,6 +10,7 @@ import pyautogui
 from imutils import face_utils
 # import the necessary packages
 from imutils.video import VideoStream
+import imutils
 from scipy.spatial import distance as dist
 
 
@@ -68,6 +69,7 @@ while True:
     # have a maximum width of 400 pixels, and convert it to
     # grayscale
     frame = vs.read()
+    frame = imutils.resize(frame,width= 400)
     frame_count += 1
     # frame = imutils.resize(frame, width=400)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
