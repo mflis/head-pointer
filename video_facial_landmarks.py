@@ -120,31 +120,6 @@ while True:
         for (x, y) in shape:
             cv2.circle(frame, (x, y), 1, (0, 0, 255), -1)
 
-        cv2.putText(frame, "vertical diff: {}".format(vertical_diff), (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "horiz diff {}".format(horizontal_diff), (300, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-        cv2.putText(frame, "vert zero: {}".format(vert_zero), (10, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "horiz zero {}".format(horiz_zero), (300, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-        cv2.putText(frame, "v_diff: {}".format(v_diff), (10, 90),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "h_diff {}".format(h_diff), (300, 90),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-        cv2.putText(frame, "Blinks: {}".format(total_blinks), (10, 120),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "EAR: {:.2f}".format(ear), (300, 120),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
-        cv2.putText(frame, "left eye: {:.2f}".format(eye_aspect_ratio(left_eye)), (10, 150),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-        cv2.putText(frame, "right eye: {:.2f}".format(eye_aspect_ratio(right_eye)), (300, 150),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-
     # show the frame
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
